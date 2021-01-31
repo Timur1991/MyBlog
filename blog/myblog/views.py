@@ -4,11 +4,11 @@ from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from django.views import View
 # импорт нашей модели
-from .models import Post
+from .models import Post, Comment
 # импорт пагинатора
 from django.core.paginator import Paginator
 # импорт наших форм
-from .forms import RegForm, AuthForm, FeedBackForm
+from .forms import RegForm, AuthForm, FeedBackForm, CommentForm
 # импорт авторизации
 from django.contrib.auth import login, authenticate
 # импорт для отправки писем на почту
@@ -37,15 +37,29 @@ class MainView(View):
 class PostDetailView(View):
     def get(self, request, slug, *args, **kwargs):
         post = get_object_or_404(Post, url=slug)
-        # добавим отображение тэгов и последних постов
+        # Добавляем отображение тегов и последний 5  постов
         common_tags = Post.tag.most_common()
         last_posts = Post.objects.all().order_by('-id')[:5]
+        # добавляем комментарии
+        comment_form = CommentForm()
         return render(request, 'myblog/post_detail.html', context={
             'post': post,
             'common_tags': common_tags,
-            'last_posts': last_posts
-        })
+            'last_posts': last_posts,
+            'comment_form': comment_form
+    })
 
+    def post(self, request, slug, *args, **kwargs):
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            text = request.POST['text']
+            username = self.request.user
+            post = get_object_or_404(Post, url=slug)
+            comment = Comment.objects.create(post=post, username=username, text=text)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return render(request, 'myblog/post_detail.html', context={
+            'comment_form': comment_form
+        })
 
 class RegView(View):
     def get(self, request, *args, **kwargs):
