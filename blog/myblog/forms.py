@@ -83,7 +83,7 @@ class FeedBackForm(forms.Form):
     )
     email = forms.CharField(
         max_length=100,
-        widget=forms.EmailField(attrs={
+        widget=forms.EmailInput(attrs={
             'class': 'form-control',
             'id': 'email',
             'placeholder': "Ваша почта"

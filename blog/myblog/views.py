@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
@@ -86,9 +87,52 @@ class FeedBackView(View):
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
             try:
-                send_mail(f'От {name} | {subject}', message, from_email, ['amromashov@gmail.com'])
+                send_mail(f'От {name}[{from_email}] | {subject}', message, from_email, ['lltima1991ll@gmail.com'])
             except BadHeaderError:
                 return HttpResponse('Невалидный заголовок')
             return HttpResponseRedirect('success')
         return render(request, 'myblog/contact.html',
                       context={'form': form})
+
+
+class SuccessView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'myblog/success.html', context={'title': 'Спасибо'})
+
+from django.db.models import Q
+
+
+# class SearchResultView(View):
+#     """Поиск без пагинации"""
+#     def get(self, request, *args, **kwargs):
+#         query = self.request.GET.get('q')
+#         results = ''
+#         if query:
+#             results = Post.objects.filter(
+#                 Q(h1__icontains=query) | Q(content__icontains=query)
+#             )
+#         return render(request, 'myblog/search.html', context={
+#             'title': 'Поиск',
+#             'results': results,
+#             'count': len(results)
+#                       })
+
+
+class SearchResultView(View):
+    """Поиск с пагинацией"""
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('q')
+        results = ''
+        if query:
+            results = Post.objects.filter(
+                Q(h1__icontains=query) | Q(content__icontains=query)
+            )
+        # создаем пагинацию, по 6 результатов на странице
+        paginator = Paginator(results, 6)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'myblog/search.html', context={
+            'title': 'Поиск',
+            'results': page_obj,
+            'count': paginator.count
+                      })
