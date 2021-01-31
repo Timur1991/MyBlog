@@ -38,9 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # мое приложение
     'myblog',
+    # библиотека текстовый редактор для создания постов
     'ckeditor',
     'ckeditor_uploader',
+    # библиотека для создания тэгов
+    'taggit',
 ]
 
 MIDDLEWARE = [
